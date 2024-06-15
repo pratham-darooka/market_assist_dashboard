@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 import pytz
+import streamlit as st
 
 
 def is_market_open():
@@ -24,18 +25,26 @@ def is_market_open():
 
 
 def display_market_status():
-    import streamlit as st
-
     if is_market_open():
         html = f"""
         <h1 style="font-size: 40px; font-weight: bold; color: green; text-align: center;">Market Status: Open 🏢</h1>
         """
         st.markdown(html, unsafe_allow_html=True)
+
+        with st.sidebar:
+            reset = st.button("Reset Dashboard", type="primary")
+            if reset:
+                st.switch_page('landing.py')
     else:
         html = f"""
         <h1 style="font-size: 40px; font-weight: bold; color: red; text-align: center;">Market Status: Closed 🚫</h1>
         """
         st.markdown(html, unsafe_allow_html=True)
+
+        with st.sidebar:
+            reset = st.button("Reset Dashboard", type="primary")
+            if reset:
+                st.switch_page('landing.py')
 
 
 if __name__ == "__main__":
