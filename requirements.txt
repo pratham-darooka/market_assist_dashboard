@@ -1,0 +1,11 @@
+streamlit
+streamlit_lottie
+watchdog
+loguru
+icecream
+tenacity
+supabase
+nsepythonserver
+python-dotenv
+bs4
+streamlit_aggrid
