@@ -3,7 +3,7 @@ import time
 from app.utils.trading_period import display_market_status, is_market_open
 import streamlit as st
 import pandas as pd
-from app.db.common import DB, Dates
+from app.db.common import DB, Dates, write_aggrid_df, Stocks
 from loguru import logger
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
@@ -11,6 +11,7 @@ st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F
 if __name__ == "__main__":
     supabase = DB()
     dates = Dates()
+    stock = Stocks()
 
     display_market_status()
 
@@ -82,12 +83,18 @@ if __name__ == "__main__":
                 expiry_dates[1]: "stock_prices_next_futures_view",
                 expiry_dates[2]: "stock_prices_last_futures_view"
             }
-            futures_df = pd.DataFrame(supabase.fetch_records(df_names_for_dates[expiry]))
 
-            futures_df = futures_df.sort_values(by="Day Change (%)", ascending=False)
-            futures_df.set_index("Stock", inplace=True)
+            selection = write_aggrid_df(df_names_for_dates[expiry], 'futures')
 
-            st.dataframe(futures_df, use_container_width=True, height=500)
+            if selection is not None:
+                st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                st.switch_page('pages/stock_info.py')
+            # futures_df = pd.DataFrame(supabase.fetch_records(df_names_for_dates[expiry]))
+
+            # futures_df = futures_df.sort_values(by="Day Change (%)", ascending=False)
+            # futures_df.set_index("Stock", inplace=True)
+
+            # st.dataframe(futures_df, use_container_width=True, height=500)
 
         if not is_market_open():
             logger.info("Market not open, breaking flow")

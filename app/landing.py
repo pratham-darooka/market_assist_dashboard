@@ -1,7 +1,11 @@
+from utils.services import trigger_update_jobs
+
+trigger_update_jobs()
+
+
 import streamlit as st
 from streamlit_lottie import st_lottie
 from utils.trading_period import display_market_status
-from utils.services import trigger_update_jobs
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
@@ -41,7 +45,5 @@ if __name__ == "__main__":
         st.markdown("<h1 style='text-align: center;'>Welcome to Market Assist!</h1>", unsafe_allow_html=True)
         st_lottie("https://lottie.host/836ee98f-16f5-4a44-a95a-3e72c45a9e35/SEABuyXqck.json", quality="low", height=500,
                   width=500)
-
-    trigger_update_jobs()
 
     st.toast("Setting up screen", icon='👀')

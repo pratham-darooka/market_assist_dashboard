@@ -41,7 +41,6 @@ if __name__ == "__main__":
     selected_rows = write_aggrid_df('stock_prices_equity', 'options')
 
     if selected_rows is not None:
-        if len(selected_rows) != 0:
             with st.container():
-                st.markdown("##### Name")
-                st.markdown(f":orange[{selected_rows}]")
+                st.markdown("Stock")
+                st.markdown(f"{list(selected_rows['stock_id'])[0]}")

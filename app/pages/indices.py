@@ -2,7 +2,7 @@ import time
 
 import streamlit as st
 from app.utils.trading_period import is_market_open, display_market_status
-from app.db.common import DB
+from app.db.common import DB, write_aggrid_df, Stocks
 import pandas as pd
 from loguru import logger
 
@@ -10,6 +10,7 @@ st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F
 
 if __name__ == "__main__":
     supabase = DB()
+    stock = Stocks()
 
     display_market_status()
 
@@ -87,25 +88,37 @@ if __name__ == "__main__":
 
     while True:
         with indices_container_placeholder.container():
-            indices_df = pd.DataFrame(supabase.fetch_records('index_price_view'))
-            indices_df.set_index('Index', inplace=True)
+            write_aggrid_df('index_price_view', 'indices', selection=False)
+            # indices_df = pd.DataFrame(supabase.fetch_records('index_price_view'))
+            # indices_df.set_index('Index', inplace=True)
 
-            st.dataframe(indices_df, use_container_width=True, height=525)
+            # st.dataframe(indices_df, use_container_width=True, height=525)
 
         with stocks_container_placeholder.container():
             if index == "All":
-                # Initialize an empty DataFrame
-                latest_cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_indices_view'))
-                latest_cash_df.set_index('Stock', inplace=True)
-                latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
-                st.dataframe(latest_cash_df, use_container_width=True, height=450)
+                selection = write_aggrid_df('stock_prices_equity_indices_view', 'contributors')
+
+                if selection is not None:
+                    st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                    st.switch_page('pages/stock_info.py')
+
+                # # Initialize an empty DataFrame
+                # latest_cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_indices_view'))
+                # latest_cash_df.set_index('Stock', inplace=True)
+                # latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
+                # st.dataframe(latest_cash_df, use_container_width=True, height=450)
             else:
-                latest_cash_df = pd.DataFrame(
-                    supabase.fetch_records('index_constituents_equity_indices_view', ('Index', 'ilike', f"*{index}*")))
-                latest_cash_df.set_index('Stock', inplace=True)
-                latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
-                st.dataframe(latest_cash_df, use_container_width=True, height=450,
-                             column_config={"Index": None})
+                selection = write_aggrid_df('index_constituents_equity_indices_view', 'contributors', condition=('Index', 'ilike', f"*{index}*"))
+
+                if selection is not None:
+                    st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                    st.switch_page('pages/stock_info.py')
+                # latest_cash_df = pd.DataFrame(
+                #     supabase.fetch_records('index_constituents_equity_indices_view', ('Index', 'ilike', f"*{index}*")))
+                # latest_cash_df.set_index('Stock', inplace=True)
+                # latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
+                # st.dataframe(latest_cash_df, use_container_width=True, height=450,
+                #              column_config={"Index": None})
 
         if not is_market_open():
             break

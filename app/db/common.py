@@ -135,6 +135,12 @@ class Stocks:
     supabase = DB()
     dates = Dates()
 
+    def get_stock_symbol_from_name(self, name):
+        return self.supabase.fetch_records('stocks', ('company_name', 'ilike', f'*{name}*'))[0]['stock_symbol']
+    
+    def get_name_from_stock_symbol(self, symbol):
+        return self.supabase.fetch_records('stocks', ('stock_symbol', 'ilike', f'*{symbol}*'))[0]['company_name']
+
     @retry(stop=stop_after_attempt(2), wait=wait_fixed(5))
     async def get_equity_quote(self, stk_id, symbol):
         equity_quote = nsefetch(f"https://www.nseindia.com/api/quote-equity?symbol={symbol}")
@@ -212,38 +218,62 @@ class Stocks:
         return tuple(upsert_dicts)
 
 
-def write_aggrid_df(table, key):
+def write_aggrid_df(table, key, height=550, condition=None, selection=True):
     supabase = DB()
-    df = pd.DataFrame(supabase.fetch_records(table))
+    df = pd.DataFrame(supabase.fetch_records(table, condition=condition))
 
-    # select the columns you want the users to see
-    gb = GridOptionsBuilder.from_dataframe(df)
-    # configure selection
-    gb.configure_selection(selection_mode="single", use_checkbox=False)
-    gb.configure_side_bar()
-    gridOptions = gb.build()
+    if selection:
+        # select the columns you want the users to see
+        gb = GridOptionsBuilder.from_dataframe(df)
+        # configure selection
+        gb.configure_selection(selection_mode="single", use_checkbox=False)
+        gb.configure_side_bar()
+        gridOptions = gb.build()
 
-    data = AgGrid(df,
-                gridOptions=gridOptions,
-                enable_enterprise_modules=True,
-                allow_unsafe_jscode=True,
-                update_mode=GridUpdateMode.SELECTION_CHANGED,
-                columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                key=key
-                )
+        data = AgGrid(df,
+                    gridOptions=gridOptions,
+                    enable_enterprise_modules=True,
+                    allow_unsafe_jscode=True,
+                    update_mode=GridUpdateMode.SELECTION_CHANGED,
+                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+                    autoSizeAllColumns=True,
+                    key=key,
+                    reload_data=True,
+                    theme='material',
+                    height=height
+                    )
 
-    selected_rows = data["selected_rows"]
-    
-    return selected_rows
+        selected_rows = data["selected_rows"]
+        
+        return selected_rows
+    else:
+        # select the columns you want the users to see
+        gb = GridOptionsBuilder.from_dataframe(df)
+        # configure selection
+        gb.configure_side_bar()
+        gridOptions = gb.build()
+
+        data = AgGrid(df,
+                    gridOptions=gridOptions,
+                    enable_enterprise_modules=True,
+                    allow_unsafe_jscode=True,
+                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+                    autoSizeAllColumns=True,
+                    key=key,
+                    reload_data=True,
+                    theme='material',
+                    height=height
+                    )
 
 
 if __name__ == "__main__":
-    db = DB()
-    ic(db.fetch_records("stock_prices_equity", ('stock_id', 'in', (16, 17, 18)), sort_by_updated=True))
-    ic(db.fetch_records("stocks", ('id', 'in', (16, 17, 18))))
+    # db = DB()
+    # ic(db.fetch_records("stock_prices_equity", ('stock_id', 'in', (16, 17, 18)), sort_by_updated=True))
+    # ic(db.fetch_records("stocks", ('id', 'in', (16, 17, 18))))
 
     # dates = Dates()
     # ic(dates.dates())
     #
-    # stx = Stocks()
+    stx = Stocks()
+    ic(stx.get_stock_symbol_from_name('Reliance Industries Limited'))
     # print(asyncio.run(stx.get_futures_quote(16, 'INFY')))
