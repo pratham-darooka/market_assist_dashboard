@@ -1,13 +1,11 @@
 import streamlit as st
+from app.db.common import write_aggrid_df
 from streamlit_lottie import st_lottie
 from utils.trading_period import display_market_status
-from app.db.supabase_engine import SupabaseSingleton
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
 if __name__ == "__main__":
-    supabase = SupabaseSingleton()
-
     display_market_status()
 
     with st.container():
@@ -40,29 +38,7 @@ if __name__ == "__main__":
     
     st.title("Page under maintainance...!!!")
 
-    import pandas as pd
-    import streamlit as st
-    from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
-
-    df = pd.DataFrame(supabase.table('stock_prices_equity_cash_view').select("*").execute().data)
-
-    # select the columns you want the users to see
-    gb = GridOptionsBuilder.from_dataframe(df)
-    # configure selection
-    gb.configure_selection(selection_mode="single", use_checkbox=False)
-    gb.configure_side_bar()
-    gridOptions = gb.build()
-
-    data = AgGrid(df,
-                gridOptions=gridOptions,
-                enable_enterprise_modules=True,
-                allow_unsafe_jscode=True,
-                # update_mode=GridUpdateMode.SELECTION_CHANGED,
-                columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                key="options"
-                )
-
-    selected_rows = data["selected_rows"]
+    selected_rows = write_aggrid_df('stock_prices_equity', 'options')
 
     if selected_rows is not None:
         if len(selected_rows) != 0:

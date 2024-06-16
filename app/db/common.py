@@ -2,6 +2,8 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 from nsepythonserver import expiry_list, nsefetch
 from icecream import ic
 
+import pandas as pd
+from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
 from app.db.supabase_engine import SupabaseSingleton
 from loguru import logger
 from app.utils.helpers import get_unique_dicts
@@ -208,6 +210,31 @@ class Stocks:
                     'sellers': market_book['totalSellQuantity'],
                 }
         return tuple(upsert_dicts)
+
+
+def write_aggrid_df(table, key):
+    supabase = DB()
+    df = pd.DataFrame(supabase.fetch_records(table))
+
+    # select the columns you want the users to see
+    gb = GridOptionsBuilder.from_dataframe(df)
+    # configure selection
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+    gb.configure_side_bar()
+    gridOptions = gb.build()
+
+    data = AgGrid(df,
+                gridOptions=gridOptions,
+                enable_enterprise_modules=True,
+                allow_unsafe_jscode=True,
+                update_mode=GridUpdateMode.SELECTION_CHANGED,
+                columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+                key=key
+                )
+
+    selected_rows = data["selected_rows"]
+    
+    return selected_rows
 
 
 if __name__ == "__main__":
