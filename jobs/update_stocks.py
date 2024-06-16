@@ -1,6 +1,6 @@
 import asyncio
 
-from app.utils.trading_period import is_market_open
+from app.utils.trading_period import is_market_open, need_run_update_script
 import time
 from loguru import logger
 from app.db.common import DB, Stocks
@@ -73,6 +73,9 @@ if __name__ == "__main__":
     fno_stocks = supabase.fetch_records('fno_stocks')
 
     while True:
+        if not need_run_update_script():
+            break
+
         if not is_market_open():
             asyncio.run(main(fno_stocks_list=fno_stocks))
             # asyncio.run(main(all_stocks_list=all_stocks))

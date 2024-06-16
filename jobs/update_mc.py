@@ -4,7 +4,7 @@ import time
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from app.db.supabase_engine import SupabaseSingleton
-from app.utils.trading_period import is_market_open
+from app.utils.trading_period import is_market_open, need_run_update_script
 from loguru import logger
 from tenacity import retry, wait_fixed, stop_after_attempt
 
@@ -92,6 +92,9 @@ def main():
 
 if __name__ == "__main__":
     while True:
+        if not need_run_update_script('moneycontrol_data'):
+            break
+
         main()
 
         if not is_market_open():
