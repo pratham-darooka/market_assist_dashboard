@@ -75,4 +75,4 @@ if __name__ == "__main__":
         
         with stock_news:
             with st.container(border=True):
-                st.markdown(ic(format_ddg_news_as_markdown(ic(fetch_recent_stock_news(name, symbol)))))
+                st.markdown(format_ddg_news_as_markdown(fetch_recent_stock_news(name, symbol)))

@@ -9,3 +9,4 @@ nsepythonserver
 python-dotenv
 bs4
 streamlit_aggrid
+markdownify

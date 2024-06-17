@@ -1,4 +1,5 @@
 from app.utils.trading_period import display_market_status
+from app.utils.whats_happening import fetch_and_parse_perplexity_output
 from app.db.common import DB
 import streamlit as st
 
@@ -57,7 +58,14 @@ if __name__ == "__main__":
         st.switch_page('pages/stock_info.py')
     else:
         with stock_info.container():
-            st.title(f"_Nothing found for..._ **{st.session_state.stock_info_code.upper()}**")
-            back = st.button("Go Back!", type="primary", use_container_width=True)
-            if back:
-                st.switch_page(f'pages/{st.session_state.referrer}.py')
+            # st.title(f"_Nothing found for..._ **{st.session_state.stock_info_code.upper()}**")
+            # back = st.button("Go Back!", type="primary", use_container_width=True)
+            # if back:
+            #     st.switch_page(f'pages/{st.session_state.referrer}.py')
+            title = st.empty()
+            
+            with title:
+                st.title(f"_Asking AI for..._ **{st.session_state.stock_info_code.title()}**")
+            st.markdown(fetch_and_parse_perplexity_output(st.session_state.stock_info_code)['llm'])
+            with title:
+                st.title(f"_AI Response for..._ **{st.session_state.stock_info_code.title()}**")
