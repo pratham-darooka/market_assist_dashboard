@@ -3,6 +3,8 @@ import pytz
 import streamlit as st
 from dateutil.parser import parse
 from app.db.common import DB
+from nsepythonserver import nse_holidays
+from loguru import logger
 
 def is_market_open():
     # Define IST timezone
@@ -20,9 +22,26 @@ def is_market_open():
         return False
 
     # Check if current time is within trading hours
-    if market_open <= now.time() <= market_close:
+    if market_open <= now.time() <= market_close and not is_holiday_today():
+        logger.info("Market closed today!")
         return True
     return False
+
+
+def is_holiday_today():
+  # Get the list of holidays for the current market
+  holidays = nse_holidays()['FO']
+
+  # Get today's date
+  today = datetime.now().strftime('%d-%b-%Y')
+
+  # Check if today is a holiday
+  is_holiday = any(holiday['tradingDate'] == today for holiday in holidays)
+
+  if is_holiday:
+      return True
+  else:
+      return False
 
 
 def display_market_status():
@@ -47,6 +66,7 @@ def display_market_status():
             if reset:
                 st.switch_page('landing.py')
 
+
 # Function to determine if the update script needs to be run
 def need_run_update_script(table_name='stock_prices_equity'):
     # Define IST timezone
@@ -61,7 +81,7 @@ def need_run_update_script(table_name='stock_prices_equity'):
     updated_at_times = [parse(item['updated_at']).astimezone(ist) for item in response]
 
     if not updated_at_times:
-        print("No data found in 'updated_at' column.")
+        logger.info("No data found in 'updated_at' column.")
         return False
 
     # Calculate the average of the `updated_at` times

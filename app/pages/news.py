@@ -1,6 +1,7 @@
 import streamlit as st
 from app.utils.trading_period import display_market_status
-from app.utils.headlines import get_mc_news, get_et_news, format_news_as_markdown
+from app.utils.headlines import get_mc_news, get_et_news, get_finshots_news, format_news_as_markdown
+from nsepythonserver import nse_events
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
@@ -38,10 +39,16 @@ if __name__ == "__main__":
     st.title("Today's Headlines 🗞️")
     mc_news = get_mc_news()
     et_news = get_et_news()
+    finshots = get_finshots_news()
     
     with st.container(border=True):
+        with st.container():
+            st.write("## Daily Finshots")
+            with st.container(border=True):
+                st.markdown(format_news_as_markdown(finshots, include_excerpt=True))
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.write("## Moneycontrol")
             with st.container(border=True, height=450):
@@ -51,3 +58,10 @@ if __name__ == "__main__":
             st.write("## Economic Times")
             with st.container(border=True, height=450):
                 st.markdown(format_news_as_markdown(et_news))
+        
+        st.write("## Corporate Events")
+        events = nse_events()
+        events = events.rename(columns={'symbol': 'Stock Symbol', 'company': 'Company Name', 'purpose': 'Purpose Description', 'bm_desc': 'Board Meeting Description', 'date': 'Event Date'})
+        events.set_index('Stock Symbol', inplace=True)
+        st.dataframe(events, use_container_width=True)
+                
