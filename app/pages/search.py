@@ -46,7 +46,7 @@ if __name__ == "__main__":
             st.title(f"_Top search results for..._ **{st.session_state.stock_info_code.upper()}**")
             stock_selection = st.radio(
                 "Select the most relevant search result",
-                [f"{result['company_name']}" for result in search_results[:10]],
+                [f"{result['company_name']}" for result in search_results[:15]],
                 captions=[f"NSE Symbol: {result['stock_symbol']}" for result in search_results[:10]],
                 index=None)
             if stock_selection:

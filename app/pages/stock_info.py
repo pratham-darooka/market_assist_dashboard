@@ -1,11 +1,15 @@
 from app.utils.trading_period import display_market_status
-from app.db.common import DB
+from app.db.common import DB, Stocks
 import streamlit as st
+from app.utils.headlines import fetch_recent_stock_news, format_ddg_news_as_markdown
+from app.utils.helpers import display_data
+from icecream import ic
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
 if __name__ == "__main__":
     supabase = DB()
+    stock = Stocks()
 
     display_market_status()
 
@@ -40,6 +44,35 @@ if __name__ == "__main__":
     stock_info = st.empty()
 
     with stock_info.container():
-        st.title(st.session_state.stock_info_co_name)
+        symbol = stock.get_stock_symbol_from_name(st.session_state.stock_info_co_name)
+        name = st.session_state.stock_info_co_name
+        st.title(f"{name} ({symbol})")
+        
+        stock_metrics = st.empty()
+        stock_analysis = st.empty()
 
-        st.write("Page is under maintainance...")
+        col1, col2 = st.columns(2)
+
+        with stock_metrics:
+            with st.container(border=True):
+                st.write("#### Stock Metrics")
+                st.write("DEVELOPMENT IN PROGRESS")
+
+        with stock_analysis:
+            with st.container(border=True):
+                st.write("#### Stock Insights")
+                st.write("DEVELOPMENT IN PROGRESS")
+
+        with col1:
+            stock_events = st.empty()
+        with col2:
+            stock_news = st.empty()
+
+        with stock_events:
+            with st.container(border=True):
+                st.write("#### Recent Corporate Events")
+                display_data(stock.get_events(symbol))
+        
+        with stock_news:
+            with st.container(border=True):
+                st.markdown(ic(format_ddg_news_as_markdown(ic(fetch_recent_stock_news(name, symbol)))))

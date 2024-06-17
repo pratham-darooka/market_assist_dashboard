@@ -216,6 +216,40 @@ class Stocks:
                     'sellers': market_book['totalSellQuantity'],
                 }
         return tuple(upsert_dicts)
+    
+    def get_events(self, symbol):
+        events = nsefetch(f'https://www.nseindia.com/api/top-corp-info?symbol={symbol}&market=equities')
+        
+        def morph_shareholding_data(data):
+            # Initialize a list to store processed data
+            processed_data = []
+
+            # Iterate over the original data
+            for date, entries in data.items():
+                # Initialize a new dictionary to store cleaned entries for the current date
+                cleaned_entries = {'Date': date}
+
+                # Iterate over each entry in the list for the current date
+                for entry in entries:
+                    for key, value in entry.items():
+                        # Check if the value is not "0.00" and clean up whitespace
+                        if value.strip() != "0.00":
+                            cleaned_entries[key.strip()] = value.strip()
+
+                # Add the cleaned entry for the current date to the processed data list
+                processed_data.append(cleaned_entries)
+
+            return processed_data
+
+        result = {
+        'Latest Announcements': events['latest_announcements']['data'],
+        'Corporate Actions': events['corporate_actions']['data'],
+        'Shareholdings Patterns': morph_shareholding_data(events['shareholdings_patterns']['data']),
+        'Financial Results': events['financial_results']['data'],
+        'Board Meeting': events['borad_meeting']['data'],
+        }
+        
+        return result
 
 
 def write_aggrid_df(table, key, height=550, condition=None, selection=True):
@@ -239,7 +273,7 @@ def write_aggrid_df(table, key, height=550, condition=None, selection=True):
                     autoSizeAllColumns=True,
                     key=key,
                     reload_data=True,
-                    theme='material',
+                    theme='alpine',
                     height=height
                     )
 
@@ -257,11 +291,11 @@ def write_aggrid_df(table, key, height=550, condition=None, selection=True):
                     gridOptions=gridOptions,
                     enable_enterprise_modules=True,
                     allow_unsafe_jscode=True,
-                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                    autoSizeAllColumns=True,
+                    # columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+                    # autoSizeAllColumns=True,
                     key=key,
                     reload_data=True,
-                    theme='material',
+                    theme='alpine',
                     height=height
                     )
 

@@ -163,3 +163,7 @@ cython_debug/
 
 # nsepython stuff
 cookies.txt
+
+# scratches
+scratch.py
+scratch.ipynb

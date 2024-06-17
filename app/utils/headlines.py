@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+from duckduckgo_search import DDGS
 
 def get_mc_news():
     # Create dictionaries to store categorized headlines and URLs
@@ -140,3 +141,27 @@ def format_news_as_markdown(categorized_news, include_excerpt=False, limit=5):
                 markdown += f"- [{article['headline']}]({article['url']})\n"
         markdown += "\n"
     return markdown
+
+def format_ddg_news_as_markdown(categorized_news, include_excerpt=False, limit=5):
+    markdown = ""
+    for category, articles in categorized_news.items():
+        markdown += f"#### {category}\n\n"
+        for article in articles[:limit]:
+            if include_excerpt and 'excerpt' in article:
+                markdown += f"- **[{article['title']}]({article['url']})**\n  \n  *{article['excerpt']}*\n"
+            else:
+                markdown += f"- [{article['title']}]({article['url']})\n"
+        markdown += "\n"
+    return markdown
+
+def fetch_recent_stock_news(name, symbol):
+    time_limits = ["d", "w", "m"]
+    time_labels = ["Last 24 hours' updates...", "Last week's updates...", "Last month's updates..."]
+
+    for time_limit, time_label in zip(time_limits, time_labels):
+        results = DDGS().news(keywords=f"'{name}' '{symbol}'", region="in-en", safesearch="off", timelimit=time_limit, max_results=10)
+        if results:
+            return {time_label: results}
+
+    return {"Recent Updates": []}
+
