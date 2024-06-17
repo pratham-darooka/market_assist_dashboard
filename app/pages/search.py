@@ -69,3 +69,7 @@ if __name__ == "__main__":
             st.markdown(fetch_and_parse_perplexity_output(st.session_state.stock_info_code)['llm'])
             with title:
                 st.title(f"_AI Response for..._ **{st.session_state.stock_info_code.title()}**")
+            
+            back = st.button("Go Back!", type="primary", use_container_width=True)
+            if back:
+                st.switch_page(f'pages/{st.session_state.referrer}.py')
