@@ -19,12 +19,13 @@ def is_market_open():
 
     # Check if today is a weekday (Monday=0, Sunday=6)
     if now.weekday() >= 5:  # Saturday or Sunday
+        logger.info("Market closed today!")
         return False
 
     # Check if current time is within trading hours
     if market_open <= now.time() <= market_close and not is_holiday_today():
-        logger.info("Market closed today!")
         return True
+    logger.info("Market closed today!")
     return False
 
 

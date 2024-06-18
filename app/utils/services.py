@@ -1,6 +1,5 @@
 from loguru import logger
 import subprocess
-import sys
 import os
 import threading
 
@@ -9,7 +8,11 @@ def run_subprocess(command):
     logger.info(f"Started subprocess {command} with PID {process.pid}")
 
 def trigger_update_jobs():
-    sys.path.append(os.path.join(os.getcwd()))
+    pwd = os.path.join(os.getcwd())
+    env = os.environ.copy()
+
+    os.environ['PYTHONPATH'] = pwd if 'PYTHONPATH' not in env else f"{env['PYTHONPATH']}:{pwd}"
+    logger.info(f"PYTHONPATH: {os.environ.get('PYTHONPATH')}")
 
     commands = [
         ["python", "jobs/update_indices.py"],
