@@ -5,6 +5,7 @@ from dateutil.parser import parse
 from app.db.common import DB
 from nsepythonserver import nse_holidays
 from loguru import logger
+from icecream import ic
 
 def is_market_open():
     # Define IST timezone
@@ -67,19 +68,19 @@ def display_market_status():
             if reset:
                 st.switch_page('landing.py')
 
-
-def need_run_update_script(table_name='stock_prices_equity', ttl=None):
+@logger.catch
+def need_run_update_script(table_name='stock_prices_equity', ttl=1):
     ist = pytz.timezone('Asia/Kolkata')
     market_end_time = time(15, 30)
 
     supabase = DB()
-    response = supabase.fetch_records(table_name)
+    response = supabase.fetch_records(table_name, sort_by_updated=True, limit=50)
 
     updated_at_times = [parse(item['updated_at']).astimezone(ist) for item in response]
 
     if not updated_at_times:
         logger.info("No data found in 'updated_at' column.")
-        return False
+        return True
 
     total_timestamp = sum(dt.timestamp() for dt in updated_at_times)
     average_timestamp = total_timestamp / len(updated_at_times)
@@ -89,22 +90,34 @@ def need_run_update_script(table_name='stock_prices_equity', ttl=None):
 
     now = datetime.now(ist)
 
+    ic(average_updated_at, average_time, average_day, now)
+
+    # Check if the average update time is after market end time
     if average_time >= market_end_time:
+        logger.info("Average update time is after market end time.")
         return False
 
+    # Check if today is Saturday (5) or Sunday (6) and average update day is Friday (4)
     if now.weekday() >= 5 and average_day == 4:
+        logger.info("Today is weekend and average update day is Friday.")
         return False
-        
+
+    # Check if the average update time plus TTL is still valid
     if ttl:
         ttl_duration = timedelta(seconds=ttl)
-        if average_updated_at + ttl_duration >= now:
-            return True
+        average_updated_with_ttl = average_updated_at + ttl_duration
+        ic(average_updated_with_ttl, now)
+        if average_updated_with_ttl >= now:
+            logger.info("TTL condition met, no need to update.")
+            return False
 
-
-    return is_market_open()
+    # All conditions passed, we need to run the update
+    logger.success("All conditions passed, need to update.")
+    return True
 
 
 if __name__ == "__main__":
-    from icecream import ic
+    ic(need_run_update_script('stock_prices_equity'))
+    ic(need_run_update_script('index_prices'))
     ic(need_run_update_script('moneycontrol_data'))
     

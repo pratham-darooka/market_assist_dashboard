@@ -18,13 +18,19 @@ class DB:
         self._fno_stocks = None
 
     @logger.catch
-    def _fetch_records(self, table_name, condition=None, sort_by_updated=False):
+    def _fetch_records(self, table_name, condition=None, sort_by_updated=False, limit=None):
         records = []
         try:
             if sort_by_updated:
-                query = self.supabase.table(table_name).select('*').order('updated_at')
+                if not limit:
+                    query = self.supabase.table(table_name).select('*').order('updated_at', desc=False)
+                else:
+                    query = self.supabase.table(table_name).select('*').order('updated_at', desc=False).limit(limit)
             else:
-                query = self.supabase.table(table_name).select('*')
+                if not limit:
+                    query = self.supabase.table(table_name).select('*')
+                else:
+                    query = self.supabase.table(table_name).limit(limit).select('*')
 
             if condition:
                 query = query.filter(*condition)
@@ -65,8 +71,8 @@ class DB:
         filter_.extend(self._fetch_records('stocks', ('company_name', 'ilike', f"*{query}*")))
         return get_unique_dicts(filter_)
 
-    def fetch_records(self, table_name="stocks", condition=None, sort_by_updated=False):
-        return self._fetch_records(table_name, condition, sort_by_updated)
+    def fetch_records(self, table_name="stocks", condition=None, sort_by_updated=False, limit=None):
+        return self._fetch_records(table_name, condition, sort_by_updated, limit)
 
     def update_records(self, table_name, data):
         return self._upsert_records(table_name, data)
