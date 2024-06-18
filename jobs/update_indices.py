@@ -104,7 +104,7 @@ if __name__ == "__main__":
     supabase = DB()
     index_list = supabase.fetch_records("indices")
     while True:
-        if not need_run_update_script("indices", ttl=5):
+        if not need_run_update_script("index_prices", ttl=5):
             logger.info("No need to run updates, already updated!")
             break
         

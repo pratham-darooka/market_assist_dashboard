@@ -2,12 +2,17 @@ from loguru import logger
 import subprocess
 import os
 import threading
+import sys
 
 def run_subprocess(command):
     process = subprocess.Popen(args=command)
     logger.info(f"Started subprocess {command} with PID {process.pid}")
 
 def trigger_update_jobs():
+    if os.getcwd() not in sys.path:
+        logger.info(f'Updated sys.path to: {sys.path}')
+        sys.path.append(os.getcwd())
+
     pwd = os.path.join(os.getcwd())
     env = os.environ.copy()
 
