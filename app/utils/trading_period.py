@@ -68,16 +68,12 @@ def display_market_status():
                 st.switch_page('landing.py')
 
 
-# Function to determine if the update script needs to be run
-def need_run_update_script(table_name='stock_prices_equity'):
-    # Define IST timezone
+def need_run_update_script(table_name='stock_prices_equity', ttl=None):
     ist = pytz.timezone('Asia/Kolkata')
     market_end_time = time(15, 30)
 
     supabase = DB()
-
-    # Query the database to get the `updated_at` column
-    response = supabase.fetch_records('stock_prices_equity')
+    response = supabase.fetch_records(table_name)
 
     updated_at_times = [parse(item['updated_at']).astimezone(ist) for item in response]
 
@@ -85,26 +81,30 @@ def need_run_update_script(table_name='stock_prices_equity'):
         logger.info("No data found in 'updated_at' column.")
         return False
 
-    # Calculate the average of the `updated_at` times
     total_timestamp = sum(dt.timestamp() for dt in updated_at_times)
     average_timestamp = total_timestamp / len(updated_at_times)
     average_updated_at = datetime.fromtimestamp(average_timestamp, ist)
     average_time = average_updated_at.time()
     average_day = average_updated_at.weekday()
 
-    # Check if the average time is at the end of the trading day
-    if average_time == market_end_time:
+    now = datetime.now(ist)
+
+    if average_time >= market_end_time:
         return False
 
-    # Check if today is Saturday or Sunday and if the average updated_at is on Friday
-    now = datetime.now(ist)
     if now.weekday() >= 5 and average_day == 4:
         return False
+        
+    if ttl:
+        ttl_duration = timedelta(seconds=ttl)
+        if average_updated_at + ttl_duration >= now:
+            return True
 
-    # Check if the market is currently open
+
     return is_market_open()
 
 
 if __name__ == "__main__":
-    need_run_update_script()
+    from icecream import ic
+    ic(need_run_update_script('moneycontrol_data'))
     

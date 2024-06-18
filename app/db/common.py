@@ -302,12 +302,14 @@ def write_aggrid_df(table, key, height=550, condition=None, selection=True):
 
 if __name__ == "__main__":
     # db = DB()
+    supabase = SupabaseSingleton()
+    ic(supabase.table('moneycontrol_data').select("*").execute())
     # ic(db.fetch_records("stock_prices_equity", ('stock_id', 'in', (16, 17, 18)), sort_by_updated=True))
     # ic(db.fetch_records("stocks", ('id', 'in', (16, 17, 18))))
 
     # dates = Dates()
     # ic(dates.dates())
     #
-    stx = Stocks()
-    ic(stx.get_stock_symbol_from_name('Reliance Industries Limited'))
+    # stx = Stocks()
+    # ic(stx.get_stock_symbol_from_name('Reliance Industries Limited'))
     # print(asyncio.run(stx.get_futures_quote(16, 'INFY')))

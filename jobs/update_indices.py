@@ -104,12 +104,14 @@ if __name__ == "__main__":
     supabase = DB()
     index_list = supabase.fetch_records("indices")
     while True:
-        if not need_run_update_script():
+        if not need_run_update_script("indices", ttl=5):
+            logger.info("No need to run updates, already updated!")
             break
         
         asyncio.run(main(index_list))
 
         if not is_market_open():
+            logger.info("No need to run updates, market closed!")
             break
 
         time.sleep(5)

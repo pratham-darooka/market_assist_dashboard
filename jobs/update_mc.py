@@ -92,12 +92,15 @@ def main():
 
 if __name__ == "__main__":
     while True:
-        if not need_run_update_script('moneycontrol_data'):
+        if not need_run_update_script('moneycontrol_data', ttl=60*60):
+            logger.info("No need to run updates, already updated!")
             break
 
         main()
 
         if not is_market_open():
+            logger.info("No need to run further updates, market closed!")
             break
 
-        time.sleep(60 * 60)
+        time.slee2p(60 * 60)
+        logger.flush()
