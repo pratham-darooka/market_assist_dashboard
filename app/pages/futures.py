@@ -87,8 +87,9 @@ if __name__ == "__main__":
             selection = write_aggrid_df(df_names_for_dates[expiry], 'futures')
 
             if selection is not None:
-                st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
                 st.switch_page('pages/stock_info.py')
+
             # futures_df = pd.DataFrame(supabase.fetch_records(df_names_for_dates[expiry]))
 
             # futures_df = futures_df.sort_values(by="Day Change (%)", ascending=False)

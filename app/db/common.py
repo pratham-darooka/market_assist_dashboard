@@ -144,6 +144,9 @@ class Stocks:
     def get_stock_symbol_from_name(self, name):
         return self.supabase.fetch_records('stocks', ('company_name', 'ilike', f'*{name}*'))[0]['stock_symbol']
     
+    def get_exact_name_from_stock_symbol(self, symbol):
+        return self.supabase.fetch_records('stocks', ('stock_symbol', 'eq', f'{symbol}'))[0]['company_name']
+
     def get_name_from_stock_symbol(self, symbol):
         return self.supabase.fetch_records('stocks', ('stock_symbol', 'ilike', f'*{symbol}*'))[0]['company_name']
 

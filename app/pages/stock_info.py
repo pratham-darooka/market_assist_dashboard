@@ -44,8 +44,10 @@ if __name__ == "__main__":
     stock_info = st.empty()
 
     with stock_info.container():
-        symbol = stock.get_stock_symbol_from_name(st.session_state.stock_info_co_name)
-        name = st.session_state.stock_info_co_name
+        stock_selected = supabase.fetch_records('stocks', ('company_name', 'eq', st.session_state.stock_info_co_name))[0]
+        symbol = stock_selected['stock_symbol']
+        name = stock_selected['company_name']
+
         st.title(f"{name} ({symbol})")
         
         stock_metrics = st.empty()
@@ -56,7 +58,23 @@ if __name__ == "__main__":
         with stock_metrics:
             with st.container(border=True):
                 st.write("#### Stock Metrics")
-                st.write("DEVELOPMENT IN PROGRESS")
+                metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+
+                with metric_col1:
+                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                
+                with metric_col2:
+                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                
+                with metric_col3:
+                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                
+                with metric_col4:
+                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                
+                with metric_col5:
+                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+
 
         with stock_analysis:
             with st.container(border=True):

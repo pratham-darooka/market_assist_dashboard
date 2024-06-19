@@ -74,7 +74,7 @@ if __name__ == "__main__":
             selection = write_aggrid_df('stock_prices_equity_cash_view', 'equity')
 
             if selection is not None:
-                st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
                 st.switch_page('pages/stock_info.py')
                 
             # cash_df = pd.DataFrame(supabase.fetch_records("stock_prices_equity_cash_view"))

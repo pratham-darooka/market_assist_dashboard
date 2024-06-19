@@ -55,7 +55,7 @@ if __name__ == "__main__":
                 with dropdown:
                     indices_df = pd.DataFrame(supabase.fetch_records('index_price_view'))
                     indices_df.set_index('Index', inplace=True)
-                    index = st.selectbox("Select index to see constituents:", ['All'] + indices_df.index.tolist(),
+                    st.session_state.index_selected = st.selectbox("Select index to see constituents:", ['All'] + indices_df.index.tolist(),
                                          index=0,
                                          label_visibility="collapsed")
 
@@ -64,11 +64,7 @@ if __name__ == "__main__":
         with constituents:
             with st.container(border=True, height=600):
                 name, search_bar = st.columns(2)
-                with name:
-                    if index != "All":
-                        st.header(f"{index} Contributors")
-                    else:
-                        st.header(f"All Stocks")
+
                 with search_bar:
                     stock_query = st.text_input("Find out what's happening...",
                                                 placeholder="Enter stock name...",
@@ -88,18 +84,27 @@ if __name__ == "__main__":
 
     while True:
         with indices_container_placeholder.container():
-            write_aggrid_df('index_price_view', 'indices', selection=False)
+            selection = write_aggrid_df('index_price_view', 'indices')
+
+            if selection is not None:
+                st.session_state.index_selected = list(selection['Index'])[0]
+
             # indices_df = pd.DataFrame(supabase.fetch_records('index_price_view'))
             # indices_df.set_index('Index', inplace=True)
 
             # st.dataframe(indices_df, use_container_width=True, height=525)
+        with name:
+            if st.session_state.index_selected != "All":
+                st.header(f"{st.session_state.index_selected} Contributors")
+            else:
+                st.header(f"All Stocks")
 
         with stocks_container_placeholder.container():
-            if index == "All":
-                selection = write_aggrid_df('stock_prices_equity_indices_view', 'contributors')
+            if st.session_state.index_selected == "All":
+                selection = write_aggrid_df('stock_prices_equity_indices_view', 'contributors_all')
 
                 if selection is not None:
-                    st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                    st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
                     st.switch_page('pages/stock_info.py')
 
                 # # Initialize an empty DataFrame
@@ -108,10 +113,10 @@ if __name__ == "__main__":
                 # latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
                 # st.dataframe(latest_cash_df, use_container_width=True, height=450)
             else:
-                selection = write_aggrid_df('index_constituents_equity_indices_view', 'contributors', condition=('Index', 'ilike', f"*{index}*"))
+                selection = write_aggrid_df('index_constituents_equity_indices_view', 'contributors', condition=('Index', 'ilike', f"*{st.session_state.index_selected}*"))
 
                 if selection is not None:
-                    st.session_state.stock_info_co_name = stock.get_name_from_stock_symbol(list(selection['Stock'])[0])
+                    st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
                     st.switch_page('pages/stock_info.py')
                 # latest_cash_df = pd.DataFrame(
                 #     supabase.fetch_records('index_constituents_equity_indices_view', ('Index', 'ilike', f"*{index}*")))
