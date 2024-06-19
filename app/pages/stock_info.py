@@ -45,6 +45,19 @@ if __name__ == "__main__":
 
     with stock_info.container():
         stock_selected = supabase.fetch_records('stocks', ('company_name', 'eq', st.session_state.stock_info_co_name))[0]
+        stock_selected_price_info = supabase.fetch_records('stock_prices_equity', ('stock_id', 'eq', stock_selected['id']))[0]
+        stock_mc_data = supabase.fetch_records('moneycontrol_data', ('id', 'eq', stock_selected['moneycontrol_id']))[0]
+        next_expiry_dates = supabase.fetch_records('expiry_dates', ('timeline', 'eq', 'next'))[0]
+        latest_expiry_dates = supabase.fetch_records('expiry_dates', ('timeline', 'eq', 'latest'))[0]
+
+        fno_stock = False
+        
+        if stock_selected['lot_size'] > 0:
+            fno_stock = True
+            stock_selected_latest_futures_price_info = supabase.fetch_records('stock_prices_futures_latest_expiry', ('fno_stock_id', 'eq', stock_selected['id']))[0]
+            stock_selected_next_futures_price_info = supabase.fetch_records('stock_prices_futures_next_expiry', ('fno_stock_id', 'eq', stock_selected['id']))[0]
+            stock_selected_last_futures_price_info = supabase.fetch_records('stock_prices_futures_last_expiry', ('fno_stock_id', 'eq', stock_selected['id']))[0]
+
         symbol = stock_selected['stock_symbol']
         name = stock_selected['company_name']
 
@@ -61,20 +74,101 @@ if __name__ == "__main__":
                 metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
 
                 with metric_col1:
-                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                    st.metric(
+                        label="Latest Price", 
+                        value=f"₹{stock_selected_price_info['last_price']}", 
+                        delta=f"{round(stock_selected_price_info['percent_change'], 2)}%"
+                        )
                 
                 with metric_col2:
-                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                    st.metric(
+                        label="Day Change", 
+                        value=f"₹{round(stock_selected_price_info['change'], 2)}",
+                        delta=f"{'+ 🟢' if round(stock_selected_price_info['change'], 2) > 0 else '- 🔴'}",
+                        )
                 
                 with metric_col3:
-                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                    st.metric(
+                        label="Traded Volume", 
+                        value=f"{stock_selected_price_info['traded_volume']} lakhs",
+                        )
                 
                 with metric_col4:
-                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                    st.metric(
+                        label="Buyers", 
+                        value=f"{stock_selected_price_info['buyers']}"
+                        )
                 
                 with metric_col5:
-                    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+                    st.metric(
+                        label="Sellers", 
+                        value=f"{stock_selected_price_info['sellers']}"
+                        )
+                
+                with metric_col1:
+                    st.metric(
+                        label="P/E Ratio", 
+                        value=f"₹{stock_selected_price_info['last_price']}", 
+                        )
+                
+                with metric_col2:
+                    st.metric(
+                        label="Industry P/E", 
+                        value=f"{stock_mc_data['metadata']['IND_PE']}"
+                        )
+                
+                with metric_col3:
+                    st.metric(
+                        label="P/B Ratio", 
+                        value=f"{stock_mc_data['metadata']['PE']}"
+                        )
+                
+                with metric_col4:
+                    st.metric(
+                        label="Book Value", 
+                        value=f"₹{stock_mc_data['metadata']['BV']}"
+                        )
+                
+                with metric_col5:
+                    st.metric(
+                        label="Face Value", 
+                        value=f"₹{stock_mc_data['metadata']['FV']}"
+                        )
 
+                with metric_col1:
+                    st.metric(
+                        label="Dividend Yield", 
+                        value=f"{stock_mc_data['metadata']['DYCONS']}%", 
+                        )
+                
+                with metric_col2:
+                    st.metric(
+                        label="Total Market Cap", 
+                        value=f"₹{stock_mc_data['metadata']['MKTCAP']} cr.", 
+                        )
+                
+                with metric_col3:
+                    if fno_stock:
+                        st.metric(
+                            label="Lot Size", 
+                            value=f"{stock_selected['lot_size']}", 
+                            )
+                
+                with metric_col4:
+                    if fno_stock:
+                        st.metric(
+                            label=f"Futures Price for {latest_expiry_dates['date']}", 
+                            value=f"₹{stock_selected_latest_futures_price_info['last_price']}", 
+                            delta=f"{round(stock_selected_latest_futures_price_info['percent_change'], 2)}%"
+                            )
+                
+                with metric_col5:
+                    if fno_stock:
+                        st.metric(
+                            label=f"Futures Price for {next_expiry_dates['date']}", 
+                            value=f"₹{stock_selected_next_futures_price_info['last_price']}",
+                            delta=f"{round(stock_selected_next_futures_price_info['percent_change'], 2)}%"
+                            )
 
         with stock_analysis:
             with st.container(border=True):

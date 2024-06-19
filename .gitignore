@@ -167,3 +167,8 @@ cookies.txt
 # scratches
 scratch.py
 scratch.ipynb
+
+# lightning.ai
+.lightning_studio/.studiorc
+.lightning_studio/on_start.sh
+.vscode/settings.json
