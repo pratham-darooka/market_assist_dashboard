@@ -90,8 +90,6 @@ def need_run_update_script(table_name='stock_prices_equity', ttl=1):
 
     now = datetime.now(ist)
 
-    ic(average_updated_at, average_time, average_day, now)
-
     # Check if the average update time is after market end time
     if average_time >= market_end_time:
         logger.info("Average update time is after market end time.")
