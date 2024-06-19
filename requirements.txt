@@ -8,5 +8,5 @@ supabase
 nsepythonserver
 python-dotenv
 bs4
-streamlit_aggrid
+streamlit_aggrid>=1.0.5
 markdownify

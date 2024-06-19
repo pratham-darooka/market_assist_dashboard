@@ -260,53 +260,86 @@ class Stocks:
         
         return result
 
-
 def write_aggrid_df(table, key, height=550, condition=None, selection=True):
+    # Assuming DB() and supabase.fetch_records() are defined elsewhere
     supabase = DB()
     df = pd.DataFrame(supabase.fetch_records(table, condition=condition))
 
+    gb = GridOptionsBuilder.from_dataframe(df)
+
     if selection:
-        # select the columns you want the users to see
-        gb = GridOptionsBuilder.from_dataframe(df)
-        # configure selection
+        # Configure selection options
         gb.configure_selection(selection_mode="single", use_checkbox=False)
-        gb.configure_side_bar()
-        gridOptions = gb.build()
+    
+    # Configure sidebar and other grid options
+    gb.configure_side_bar()
+    gridOptions = gb.build()
 
-        data = AgGrid(df,
-                    gridOptions=gridOptions,
-                    enable_enterprise_modules=True,
-                    allow_unsafe_jscode=True,
-                    update_mode=GridUpdateMode.SELECTION_CHANGED,
-                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                    autoSizeAllColumns=True,
-                    key=key,
-                    reload_data=True,
-                    theme='alpine',
-                    height=height
-                    )
+    data = AgGrid(
+        df,
+        allow_unsafe_jscode=True,
+        gridOptions=gridOptions,
+        update_mode=GridUpdateMode.SELECTION_CHANGED,
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+        autoSizeAllColumns=True,
+        key=key,
+        reload_data=True,
+        theme='alpine',
+        height=height
+    )
 
+    if selection:
         selected_rows = data["selected_rows"]
-        
         return selected_rows
     else:
-        # select the columns you want the users to see
-        gb = GridOptionsBuilder.from_dataframe(df)
-        # configure selection
-        gb.configure_side_bar()
-        gridOptions = gb.build()
+        return data
 
-        data = AgGrid(df,
-                    gridOptions=gridOptions,
-                    enable_enterprise_modules=True,
-                    allow_unsafe_jscode=True,
-                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                    autoSizeAllColumns=True,
-                    key=key,
-                    reload_data=True,
-                    theme='alpine',
-                    height=height
-                    )
+# def write_aggrid_df(table, key, height=550, condition=None, selection=True):
+#     supabase = DB()
+#     df = pd.DataFrame(supabase.fetch_records(table, condition=condition))
+
+#     if selection:
+#         # select the columns you want the users to see
+#         gb = GridOptionsBuilder.from_dataframe(df)
+#         # configure selection
+#         gb.configure_selection(selection_mode="single", use_checkbox=False)
+#         gb.configure_side_bar()
+#         gridOptions = gb.build()
+
+#         data = AgGrid(df,
+#                     gridOptions=gridOptions,
+#                     enable_enterprise_modules=True,
+#                     allow_unsafe_jscode=True,
+#                     update_mode=GridUpdateMode.SELECTION_CHANGED,
+#                     columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+#                     autoSizeAllColumns=True,
+#                     key=key,
+#                     reload_data=True,
+#                     theme='alpine',
+#                     height=height
+#                     )
+
+#         selected_rows = data["selected_rows"]
+        
+#         return selected_rows
+#     else:
+#         # select the columns you want the users to see
+#         gb = GridOptionsBuilder.from_dataframe(df)
+#         # configure selection
+#         gb.configure_side_bar()
+#         gridOptions = gb.build()
+
+#         data = AgGrid(df,
+#                     gridOptions=gridOptions,
+#                     enable_enterprise_modules=True,
+#                     allow_unsafe_jscode=True,
+#                     columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+#                     autoSizeAllColumns=True,
+#                     key=key,
+#                     reload_data=True,
+#                     theme='alpine',
+#                     height=height
+#                     )
 
 
 if __name__ == "__main__":
