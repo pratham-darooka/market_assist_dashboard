@@ -1,9 +1,13 @@
-from app.utils.trading_period import display_market_status
-from app.db.common import DB, Stocks
-import streamlit as st
-from app.utils.headlines import fetch_recent_stock_news, format_ddg_news_as_markdown
-from app.utils.helpers import display_data
-from icecream import ic
+try:
+    from app.utils.trading_period import display_market_status
+    from app.db.common import DB, Stocks
+    import streamlit as st
+    from app.utils.headlines import fetch_recent_stock_news, format_ddg_news_as_markdown
+    from app.utils.helpers import display_data
+    from icecream import ic
+except:
+    import streamlit as st
+    st.switch_page('landing.py')
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
@@ -79,6 +83,16 @@ if __name__ == "__main__":
                         value=f"₹{stock_selected_price_info['last_price']}", 
                         delta=f"{round(stock_selected_price_info['percent_change'], 2)}%"
                         )
+
+                    st.metric(
+                        label="P/E Ratio", 
+                        value=f"₹{stock_selected_price_info['last_price']}", 
+                        )      
+
+                    st.metric(
+                        label="Dividend Yield", 
+                        value=f"{stock_mc_data['metadata']['DYCONS']}%", 
+                        )              
                 
                 with metric_col2:
                     st.metric(
@@ -86,68 +100,28 @@ if __name__ == "__main__":
                         value=f"₹{round(stock_selected_price_info['change'], 2)}",
                         delta=f"{'+ 🟢' if round(stock_selected_price_info['change'], 2) > 0 else '- 🔴'}",
                         )
+                    
+                    st.metric(
+                        label="Industry P/E", 
+                        value=f"{stock_mc_data['metadata']['IND_PE']}"
+                        )
+                    
+                    st.metric(
+                        label="Total Market Cap", 
+                        value=f"₹{stock_mc_data['metadata']['MKTCAP']} cr.", 
+                        )                    
                 
                 with metric_col3:
                     st.metric(
                         label="Traded Volume", 
                         value=f"{stock_selected_price_info['traded_volume']} lakhs",
                         )
-                
-                with metric_col4:
-                    st.metric(
-                        label="Buyers", 
-                        value=f"{stock_selected_price_info['buyers']}"
-                        )
-                
-                with metric_col5:
-                    st.metric(
-                        label="Sellers", 
-                        value=f"{stock_selected_price_info['sellers']}"
-                        )
-                
-                with metric_col1:
-                    st.metric(
-                        label="P/E Ratio", 
-                        value=f"₹{stock_selected_price_info['last_price']}", 
-                        )
-                
-                with metric_col2:
-                    st.metric(
-                        label="Industry P/E", 
-                        value=f"{stock_mc_data['metadata']['IND_PE']}"
-                        )
-                
-                with metric_col3:
+                    
                     st.metric(
                         label="P/B Ratio", 
                         value=f"{stock_mc_data['metadata']['PE']}"
                         )
-                
-                with metric_col4:
-                    st.metric(
-                        label="Book Value", 
-                        value=f"₹{stock_mc_data['metadata']['BV']}"
-                        )
-                
-                with metric_col5:
-                    st.metric(
-                        label="Face Value", 
-                        value=f"₹{stock_mc_data['metadata']['FV']}"
-                        )
 
-                with metric_col1:
-                    st.metric(
-                        label="Dividend Yield", 
-                        value=f"{stock_mc_data['metadata']['DYCONS']}%", 
-                        )
-                
-                with metric_col2:
-                    st.metric(
-                        label="Total Market Cap", 
-                        value=f"₹{stock_mc_data['metadata']['MKTCAP']} cr.", 
-                        )
-                
-                with metric_col3:
                     if fno_stock:
                         st.metric(
                             label="Lot Size", 
@@ -155,6 +129,16 @@ if __name__ == "__main__":
                             )
                 
                 with metric_col4:
+                    st.metric(
+                        label="Buyers", 
+                        value=f"{stock_selected_price_info['buyers']}"
+                        )
+
+                    st.metric(
+                        label="Book Value", 
+                        value=f"₹{stock_mc_data['metadata']['BV']}"
+                        )
+
                     if fno_stock:
                         st.metric(
                             label=f"Futures Price for {latest_expiry_dates['date']}", 
@@ -163,6 +147,16 @@ if __name__ == "__main__":
                             )
                 
                 with metric_col5:
+                    st.metric(
+                        label="Sellers", 
+                        value=f"{stock_selected_price_info['sellers']}"
+                        )
+            
+                    st.metric(
+                        label="Face Value", 
+                        value=f"₹{stock_mc_data['metadata']['FV']}"
+                        )
+
                     if fno_stock:
                         st.metric(
                             label=f"Futures Price for {next_expiry_dates['date']}", 
@@ -187,4 +181,5 @@ if __name__ == "__main__":
         
         with stock_news:
             with st.container(border=True):
-                st.markdown(format_ddg_news_as_markdown(fetch_recent_stock_news(name, symbol)))
+                st.markdo
+                wn(format_ddg_news_as_markdown(fetch_recent_stock_news(name, symbol)))

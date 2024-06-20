@@ -5,7 +5,6 @@ from dateutil.parser import parse
 from app.db.common import DB
 from nsepythonserver import nse_holidays
 from loguru import logger
-from icecream import ic
 
 def is_market_open():
     # Define IST timezone
@@ -104,7 +103,6 @@ def need_run_update_script(table_name='stock_prices_equity', ttl=1):
     if ttl:
         ttl_duration = timedelta(seconds=ttl)
         average_updated_with_ttl = average_updated_at + ttl_duration
-        ic(average_updated_with_ttl, now)
         if average_updated_with_ttl >= now:
             logger.info("TTL condition met, no need to update.")
             return False

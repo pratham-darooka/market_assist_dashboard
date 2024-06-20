@@ -282,64 +282,18 @@ def write_aggrid_df(table, key, height=550, condition=None, selection=True):
         update_mode=GridUpdateMode.SELECTION_CHANGED,
         columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
         autoSizeAllColumns=True,
-        key=key,
-        reload_data=True,
+        # key=f'{key}_{datetime.now()}',
+        reload_data=False,
+        # reload_data=True,
         theme='alpine',
-        height=height
+        height=height,
     )
 
     if selection:
-        selected_rows = data["selected_rows"]
+        selected_rows = ic(data["selected_rows"])
         return selected_rows
     else:
         return data
-
-# def write_aggrid_df(table, key, height=550, condition=None, selection=True):
-#     supabase = DB()
-#     df = pd.DataFrame(supabase.fetch_records(table, condition=condition))
-
-#     if selection:
-#         # select the columns you want the users to see
-#         gb = GridOptionsBuilder.from_dataframe(df)
-#         # configure selection
-#         gb.configure_selection(selection_mode="single", use_checkbox=False)
-#         gb.configure_side_bar()
-#         gridOptions = gb.build()
-
-#         data = AgGrid(df,
-#                     gridOptions=gridOptions,
-#                     enable_enterprise_modules=True,
-#                     allow_unsafe_jscode=True,
-#                     update_mode=GridUpdateMode.SELECTION_CHANGED,
-#                     columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-#                     autoSizeAllColumns=True,
-#                     key=key,
-#                     reload_data=True,
-#                     theme='alpine',
-#                     height=height
-#                     )
-
-#         selected_rows = data["selected_rows"]
-        
-#         return selected_rows
-#     else:
-#         # select the columns you want the users to see
-#         gb = GridOptionsBuilder.from_dataframe(df)
-#         # configure selection
-#         gb.configure_side_bar()
-#         gridOptions = gb.build()
-
-#         data = AgGrid(df,
-#                     gridOptions=gridOptions,
-#                     enable_enterprise_modules=True,
-#                     allow_unsafe_jscode=True,
-#                     columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-#                     autoSizeAllColumns=True,
-#                     key=key,
-#                     reload_data=True,
-#                     theme='alpine',
-#                     height=height
-#                     )
 
 
 if __name__ == "__main__":

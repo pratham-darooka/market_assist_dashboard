@@ -1,7 +1,11 @@
-import streamlit as st
-from app.utils.trading_period import display_market_status
-from app.utils.headlines import get_mc_news, get_et_news, get_finshots_news, format_news_as_markdown
-from nsepythonserver import nse_events
+try:
+    import streamlit as st
+    from app.utils.trading_period import display_market_status
+    from app.utils.headlines import get_mc_news, get_et_news, get_finshots_news, format_news_as_markdown
+    from nsepythonserver import nse_events
+except:
+    import streamlit as st
+    st.switch_page('landing.py')
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 

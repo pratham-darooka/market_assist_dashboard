@@ -1,7 +1,11 @@
-from app.utils.trading_period import display_market_status
-from app.utils.whats_happening import fetch_and_parse_perplexity_output
-from app.db.common import DB
-import streamlit as st
+try:
+    from app.utils.trading_period import display_market_status
+    from app.utils.whats_happening import fetch_and_parse_perplexity_output
+    from app.db.common import DB
+    import streamlit as st
+except:
+    import streamlit as st
+    st.switch_page('landing.py')
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
@@ -39,8 +43,12 @@ if __name__ == "__main__":
                 st.switch_page("pages/news.py")
 
     stock_info = st.empty()
+    
+    try:
+        search_results = supabase.search_stocks(st.session_state.stock_info_code)
+    except:
+        st.switch_page('landing.py')
 
-    search_results = supabase.search_stocks(st.session_state.stock_info_code)
 
     if len(search_results) > 1:
         with stock_info.container():

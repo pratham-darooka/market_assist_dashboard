@@ -1,10 +1,13 @@
-import time
-
-import streamlit as st
-from app.utils.trading_period import is_market_open, display_market_status
-from app.db.common import DB, write_aggrid_df, Stocks
-import pandas as pd
-from loguru import logger
+try:
+    import time
+    import streamlit as st
+    from app.utils.trading_period import is_market_open, display_market_status
+    from app.db.common import DB, write_aggrid_df, Stocks
+    import pandas as pd
+    from loguru import logger
+except:
+    import streamlit as st
+    st.switch_page('landing.py')
 
 st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F4C8", initial_sidebar_state="collapsed")
 
@@ -128,4 +131,4 @@ if __name__ == "__main__":
         if not is_market_open():
             break
 
-        time.sleep(1)
+        time.sleep(5)
