@@ -64,9 +64,13 @@ if __name__ == "__main__":
 
                 indices_container_placeholder = st.empty()
 
+
         with constituents:
             with st.container(border=True, height=600):
                 name, search_bar = st.columns(2)
+
+                with name:
+                    name_container = st.empty()
 
                 with search_bar:
                     stock_query = st.text_input("Find out what's happening...",
@@ -96,10 +100,12 @@ if __name__ == "__main__":
             # indices_df.set_index('Index', inplace=True)
 
             # st.dataframe(indices_df, use_container_width=True, height=525)
-        with name:
-            if st.session_state.index_selected != "All":
+
+        if st.session_state.index_selected != "All":
+            with name_container:
                 st.header(f"{st.session_state.index_selected} Contributors")
-            else:
+        else:
+            with name_container:
                 st.header(f"All Stocks")
 
         with stocks_container_placeholder.container():
@@ -115,6 +121,7 @@ if __name__ == "__main__":
                 # latest_cash_df.set_index('Stock', inplace=True)
                 # latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
                 # st.dataframe(latest_cash_df, use_container_width=True, height=450)
+                
             else:
                 selection = write_aggrid_df('index_constituents_equity_indices_view', 'contributors', condition=('Index', 'ilike', f"*{st.session_state.index_selected}*"))
 

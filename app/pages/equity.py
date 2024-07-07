@@ -3,8 +3,10 @@ try:
     from app.utils.trading_period import display_market_status, is_market_open
     import streamlit as st
     import pandas as pd
+    from datetime import datetime
     from app.db.common import DB, write_aggrid_df, Stocks
     from loguru import logger
+    from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
 except:
     import streamlit as st
     st.switch_page('landing.py')
@@ -51,6 +53,35 @@ if __name__ == "__main__":
 
         cash_df_container = st.empty()
 
+        ######
+
+        cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
+
+        gb = GridOptionsBuilder.from_dataframe(cash_df)
+        gb.configure_selection(selection_mode="single", use_checkbox=False)
+        gridOptions = gb.build()
+
+        data = AgGrid(
+            cash_df,
+            enable_enterprise_modules=False,
+            allow_unsafe_jscode=True,
+            gridOptions=gridOptions,
+            update_mode=GridUpdateMode.VALUE_CHANGED,
+            fit_columns_on_grid_load=True,
+            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+            autoSizeAllColumns=True,
+            # key=f'equity_{datetime.now()}',
+            key=f'equity',
+            width="100%",
+            reload_data=True,
+            theme='alpine',
+            height=550,
+        )
+
+        selection = data["selected_rows"]
+
+        ######
+
         with title:
             st.header("All Stocks - Equity")
 
@@ -75,12 +106,14 @@ if __name__ == "__main__":
 
     while True:
         with cash_df_container:
-            selection = write_aggrid_df('stock_prices_equity_cash_view', 'equity')
+            cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
+
+            # selection = write_aggrid_df('stock_prices_equity_cash_view', 'equity')
 
             if selection is not None:
                 st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
                 st.switch_page('pages/stock_info.py')
-                
+            
             # cash_df = pd.DataFrame(supabase.fetch_records("stock_prices_equity_cash_view"))
 
             # cash_df = cash_df.sort_values(by="Day Change (%)", ascending=False)

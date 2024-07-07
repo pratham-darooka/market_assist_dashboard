@@ -41,10 +41,68 @@ if __name__ == "__main__":
                 st.switch_page("pages/news.py")
     
     st.title("Page under maintainance...!!!")
+    
+    import time
+    from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
 
-    selected_rows = write_aggrid_df('stock_prices_equity', 'options')
+    a = st.empty()
 
-    if selected_rows is not None:
-            with st.container():
-                st.markdown("Stock")
-                st.markdown(f"{list(selected_rows['stock_id'])[0]}")
+    @st.cache_data()
+    def load_data():
+        import pandas as pd
+        import numpy as np
+
+        data = pd.DataFrame(np.array([[1, 2, 3], [4, 5, 6], [0, 0, 0]]), columns=['a', 'b', 'c'])
+        return data
+    
+    @st.cache_data()
+    def result(a, b):
+        return a + b
+    
+    df = load_data()
+
+    gb = GridOptionsBuilder.from_dataframe(df)
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+    gridOptions = gb.build()
+
+    data = AgGrid(
+        df,
+        enable_enterprise_modules=False,
+        allow_unsafe_jscode=True,
+        gridOptions=gridOptions,
+        # update_mode=GridUpdateMode.SELECTION_CHANGED,
+        fit_columns_on_grid_load=True,
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+        autoSizeAllColumns=True,
+        # key=f'equity_{datetime.now()}',
+        key=f'equity',
+        width="100%",
+        reload_data=True,
+        theme='alpine',
+        height=550,
+    )
+
+    selection = data["selected_rows"]
+
+    # Función para actualizar la columna 'c' en el Dataframe.
+    def update_c_column(df):
+        df['c'] = df.apply(lambda x: result(x['a'], x['b']), axis=1)
+
+
+    # Activar la actualización
+    if st.button("Update 'c' column"):
+        update_c_column(df)
+        st.write(df)
+        # Crea un nuevo AgGrid!!!
+
+    st.write(selection)
+
+    while True:
+        data.data = df
+        # selected_rows = write_aggrid_df('stock_prices_equity', 'options')
+
+        # if selected_rows is not None:
+        #         with st.container():
+        #             st.markdown("Stock")
+        #             st.markdown(f"{list(selected_rows['stock_id'])[0]}")
+        time.sleep(1)

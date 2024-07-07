@@ -73,8 +73,6 @@ if __name__ == "__main__":
     fno_stocks = supabase.fetch_records('fno_stocks')
 
     while True:
-        logger.remove(0)
-
         if not need_run_update_script():
             logger.info("No need to run updates, already updated!")
             break

@@ -277,20 +277,24 @@ def write_aggrid_df(table, key, height=550, condition=None, selection=True):
 
     data = AgGrid(
         df,
+        enable_enterprise_modules=False,
         allow_unsafe_jscode=True,
         gridOptions=gridOptions,
         update_mode=GridUpdateMode.SELECTION_CHANGED,
+        fit_columns_on_grid_load=True,
         columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
         autoSizeAllColumns=True,
-        # key=f'{key}_{datetime.now()}',
+        key=f'{key}_{datetime.now()}',
+        # key=f'{key}',
         reload_data=False,
+        width="100%",
         # reload_data=True,
         theme='alpine',
         height=height,
     )
 
     if selection:
-        selected_rows = ic(data["selected_rows"])
+        selected_rows = data["selected_rows"]
         return selected_rows
     else:
         return data

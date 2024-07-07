@@ -5,6 +5,7 @@ from dateutil.parser import parse
 from app.db.common import DB
 from nsepythonserver import nse_holidays
 from loguru import logger
+from icecream import ic
 
 def is_market_open():
     # Define IST timezone
@@ -67,49 +68,49 @@ def display_market_status():
             if reset:
                 st.switch_page('landing.py')
 
+def get_last_trading_day(now):
+    # Find the last trading day considering weekends
+    last_trading_day = now
+    if now.weekday() == 6:  # Sunday
+        last_trading_day = now - timedelta(days=2)
+    elif now.weekday() == 5:  # Saturday
+        last_trading_day = now - timedelta(days=1)
+    elif now.time() > time(15, 30):  # After market hours
+        last_trading_day = now - timedelta(days=1)
+    
+    while last_trading_day.weekday() >= 5:  # Skip weekend days
+        last_trading_day -= timedelta(days=1)
+    
+    last_trading_day = last_trading_day.replace(hour=15, minute=30, second=0, microsecond=0)
+    return last_trading_day
+
 @logger.catch
-def need_run_update_script(table_name='stock_prices_equity', ttl=1):
+def need_run_update_script(table_name='stock_prices_equity'):
     ist = pytz.timezone('Asia/Kolkata')
-    market_end_time = time(15, 30)
+    now = datetime.now(ist)
 
     supabase = DB()
     response = supabase.fetch_records(table_name, sort_by_updated=True, limit=50)
+    
+    if not response:
+        logger.info(f"No data found in '{table_name}'.")
+        return True
+    
+    # Get the most recent update time
+    latest_update_time = parse(response[0]['updated_at']).astimezone(ist)
+    logger.info(f"Latest update time: {latest_update_time}")
 
-    updated_at_times = [parse(item['updated_at']).astimezone(ist) for item in response]
+    # Determine the last trading day
+    last_trading_day = get_last_trading_day(now)
+    logger.info(f"Last trading day: {last_trading_day}")
 
-    if not updated_at_times:
-        logger.info("No data found in 'updated_at' column.")
+    # Check if the latest update time is before the last trading day
+    if latest_update_time < last_trading_day:
+        logger.info(f"Latest update is before the last trading day. Need to update {table_name}.")
         return True
 
-    total_timestamp = sum(dt.timestamp() for dt in updated_at_times)
-    average_timestamp = total_timestamp / len(updated_at_times)
-    average_updated_at = datetime.fromtimestamp(average_timestamp, ist)
-    average_time = average_updated_at.time()
-    average_day = average_updated_at.weekday()
-
-    now = datetime.now(ist)
-
-    # Check if the average update time is after market end time
-    if average_time >= market_end_time:
-        logger.info("Average update time is after market end time.")
-        return False
-
-    # Check if today is Saturday (5) or Sunday (6) and average update day is Friday (4)
-    if now.weekday() >= 5 and average_day == 4:
-        logger.info("Today is weekend and average update day is Friday.")
-        return False
-
-    # Check if the average update time plus TTL is still valid
-    if ttl:
-        ttl_duration = timedelta(seconds=ttl)
-        average_updated_with_ttl = average_updated_at + ttl_duration
-        if average_updated_with_ttl >= now:
-            logger.info("TTL condition met, no need to update.")
-            return False
-
-    # All conditions passed, we need to run the update
-    logger.success("All conditions passed, need to update.")
-    return True
+    logger.info(f"No update needed for {table_name}.")
+    return False
 
 
 if __name__ == "__main__":

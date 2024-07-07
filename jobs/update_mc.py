@@ -4,6 +4,7 @@ import time
 import requests
 from concurrent.futures import ThreadPoolExecutor
 from app.db.supabase_engine import SupabaseSingleton
+from app.db.common import DB
 from app.utils.trading_period import is_market_open, need_run_update_script
 from loguru import logger
 from tenacity import retry, wait_fixed, stop_after_attempt
@@ -50,7 +51,8 @@ def gather_data(mc_code, headers, price_headers):
 
 
 def main():
-    supabase = SupabaseSingleton()
+    supabase_engine = SupabaseSingleton()
+    supabase = DB()
     headers = {
         'Accept': 'application/json, text/javascript, */*; q=0.01',
         'Sec-Fetch-Site': 'same-site',
@@ -80,21 +82,23 @@ def main():
         'Sec-Fetch-Dest': 'empty',
         'auth-token': os.environ['MC_AUTH_TOKEN']
     }
-    all_mc_stocks = supabase.table('moneycontrol_data').select("*").order('updated_at').execute().data
 
-    for item in all_mc_stocks:
+    if is_market_open():
+        mc_stocks = supabase_engine.table("moneycontrol_data").select("*, stocks(lot_size)").filter("stocks.lot_size", "gt", 0).execute().data
+    else:
+        mc_stocks = supabase.fetch_records('moneycontrol_data', )
+
+    for item in mc_stocks:
         mc_code = item['code']
         upsert_dict = {"code": mc_code, 'name': item['name'], 'id': item['id']}
         upsert_dict.update(gather_data(mc_code, headers, price_headers))
 
-        supabase.table("moneycontrol_data").upsert(upsert_dict).execute()
+        supabase.update_records('moneycontrol_data', upsert_dict)
 
 
 if __name__ == "__main__":
     while True:
-        logger.remove(0)
-        
-        if not need_run_update_script('moneycontrol_data', ttl=60*60):
+        if not need_run_update_script('moneycontrol_data'):
             logger.info("No need to run updates, already updated!")
             break
 
@@ -104,5 +108,4 @@ if __name__ == "__main__":
             logger.info("No need to run further updates, market closed!")
             break
 
-        time.slee2p(60 * 60)
-        logger.flush()
+        time.sleep(60 * 60)
