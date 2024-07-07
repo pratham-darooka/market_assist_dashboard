@@ -82,6 +82,6 @@ if __name__ == "__main__":
             logger.info("No need to run further updates, market closed!")
             break
         else:
-            asyncio.run(main(fno_stocks_list=fno_stocks))
+            asyncio.run(main(fno_stocks_list=all_stocks))
 
         time.sleep(1)

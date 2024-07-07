@@ -43,7 +43,7 @@ if __name__ == "__main__":
     _, lottie, _ = st.columns(3)
     with lottie:
         st.markdown("<h1 style='text-align: center;'>Welcome to Market Assist!</h1>", unsafe_allow_html=True)
-        st_lottie("https://lottie.host/836ee98f-16f5-4a44-a95a-3e72c45a9e35/SEABuyXqck.json", quality="low", height=500,
-                  width=500)
+        st_lottie("https://lottie.host/836ee98f-16f5-4a44-a95a-3e72c45a9e35/SEABuyXqck.json", quality="low", height=400,
+                  width=400)
 
     st.toast("Setting up screen", icon='👀')

@@ -26,6 +26,7 @@ def is_market_open():
     # Check if current time is within trading hours
     if market_open <= now.time() <= market_close and not is_holiday_today():
         return True
+
     logger.info("Market closed today!")
     return False
 
@@ -96,16 +97,21 @@ def need_run_update_script(table_name='stock_prices_equity'):
         logger.info(f"No data found in '{table_name}'.")
         return True
     
-    # Get the most recent update time
-    latest_update_time = parse(response[0]['updated_at']).astimezone(ist)
-    logger.info(f"Latest update time: {latest_update_time}")
+    # # Get the most recent update time
+    # latest_update_time = parse(ic(response[1]['updated_at'])).astimezone(ist)
+    # logger.info(f"Latest update time: {latest_update_time}")
+    # Calculate the average update time
+    update_times = [parse(record['updated_at']).astimezone(ist) for record in response]
+    average_update_time = sum((ut - datetime(1970, 1, 1, tzinfo=ist)).total_seconds() for ut in update_times) / len(update_times)
+    average_update_time = datetime.fromtimestamp(average_update_time, tz=ist)
+    logger.info(f"Average update time: {average_update_time}")
 
     # Determine the last trading day
     last_trading_day = get_last_trading_day(now)
     logger.info(f"Last trading day: {last_trading_day}")
 
     # Check if the latest update time is before the last trading day
-    if latest_update_time < last_trading_day:
+    if average_update_time < last_trading_day:
         logger.info(f"Latest update is before the last trading day. Need to update {table_name}.")
         return True
 
@@ -114,7 +120,9 @@ def need_run_update_script(table_name='stock_prices_equity'):
 
 
 if __name__ == "__main__":
+    ic(is_market_open())
     ic(need_run_update_script('stock_prices_equity'))
+    ic(need_run_update_script('stock_prices_futures_latest_expiry'))
     ic(need_run_update_script('index_prices'))
     ic(need_run_update_script('moneycontrol_data'))
     
