@@ -1,8 +1,9 @@
 try:
     import streamlit as st
-    from app.db.common import write_aggrid_df
+    from app.db.common import DB, Stocks
     from streamlit_lottie import st_lottie
     from utils.trading_period import display_market_status
+    import pandas as pd
 except:
     import streamlit as st
     st.switch_page('landing.py')
@@ -42,67 +43,19 @@ if __name__ == "__main__":
     
     st.title("Page under maintainance...!!!")
     
-    import time
-    from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
+    supabase = DB()
+    stock = Stocks()
 
-    a = st.empty()
 
-    @st.cache_data()
-    def load_data():
-        import pandas as pd
-        import numpy as np
-
-        data = pd.DataFrame(np.array([[1, 2, 3], [4, 5, 6], [0, 0, 0]]), columns=['a', 'b', 'c'])
-        return data
-    
-    @st.cache_data()
-    def result(a, b):
-        return a + b
-    
-    df = load_data()
-
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_selection(selection_mode="single", use_checkbox=False)
-    gridOptions = gb.build()
-
-    data = AgGrid(
-        df,
-        enable_enterprise_modules=False,
-        allow_unsafe_jscode=True,
-        gridOptions=gridOptions,
-        # update_mode=GridUpdateMode.SELECTION_CHANGED,
-        fit_columns_on_grid_load=True,
-        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-        autoSizeAllColumns=True,
-        # key=f'equity_{datetime.now()}',
-        key=f'equity',
-        width="100%",
-        reload_data=True,
-        theme='alpine',
-        height=550,
+    stock_price_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
+    event = st.dataframe(
+        stock_price_df,
+        on_select='rerun',
+        selection_mode="single-row",
+        hide_index=True
     )
-
-    selection = data["selected_rows"]
-
-    # Función para actualizar la columna 'c' en el Dataframe.
-    def update_c_column(df):
-        df['c'] = df.apply(lambda x: result(x['a'], x['b']), axis=1)
-
-
-    # Activar la actualización
-    if st.button("Update 'c' column"):
-        update_c_column(df)
-        st.write(df)
-        # Crea un nuevo AgGrid!!!
-
-    st.write(selection)
-
-    while True:
-        data.data = df
-        # selected_rows = write_aggrid_df('stock_prices_equity', 'options')
-
-        # if selected_rows is not None:
-        #         with st.container():
-        #             st.markdown("Stock")
-        #             st.markdown(f"{list(selected_rows['stock_id'])[0]}")
-        time.sleep(1)
+    
+    selection = event.selection.rows
+    if selection:
+        st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(stock_price_df.iloc[selection]['Stock'].tolist()[0])
+        st.switch_page('pages/stock_info.py')

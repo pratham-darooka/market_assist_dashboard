@@ -32,19 +32,22 @@ def is_market_open():
 
 
 def is_holiday_today():
-  # Get the list of holidays for the current market
-  holidays = nse_holidays()['FO']
+    try:
+        # Get the list of holidays for the current market
+        holidays = nse_holidays()['FO']
 
-  # Get today's date
-  today = datetime.now().strftime('%d-%b-%Y')
+        # Get today's date
+        today = datetime.now().strftime('%d-%b-%Y')
 
-  # Check if today is a holiday
-  is_holiday = any(holiday['tradingDate'] == today for holiday in holidays)
+        # Check if today is a holiday
+        is_holiday = any(holiday['tradingDate'] == today for holiday in holidays)
 
-  if is_holiday:
-      return True
-  else:
-      return False
+        if is_holiday:
+            return True
+        else:
+            return False
+    except:
+        return True
 
 
 def display_market_status():
@@ -70,15 +73,19 @@ def display_market_status():
                 st.switch_page('landing.py')
 
 def get_last_trading_day(now):
-    # Find the last trading day considering weekends
-    last_trading_day = now
-    if now.weekday() == 6:  # Sunday
-        last_trading_day = now - timedelta(days=2)
-    elif now.weekday() == 5:  # Saturday
+    ist = pytz.timezone('Asia/Kolkata')
+    market_close_time = time(15, 30)
+    
+    if now.weekday() == 5:  # Saturday
         last_trading_day = now - timedelta(days=1)
-    elif now.time() > time(15, 30):  # After market hours
+    elif now.weekday() == 6:  # Sunday
+        last_trading_day = now - timedelta(days=2)
+    elif now.time() <= market_close_time:  # If current time is before or equal to market close time today
+        last_trading_day = now
+    else:
         last_trading_day = now - timedelta(days=1)
     
+    # Adjust last_trading_day to the latest weekday before today, if today is a weekend day
     while last_trading_day.weekday() >= 5:  # Skip weekend days
         last_trading_day -= timedelta(days=1)
     
@@ -97,10 +104,7 @@ def need_run_update_script(table_name='stock_prices_equity'):
         logger.info(f"No data found in '{table_name}'.")
         return True
     
-    # # Get the most recent update time
-    # latest_update_time = parse(ic(response[1]['updated_at'])).astimezone(ist)
-    # logger.info(f"Latest update time: {latest_update_time}")
-    # Calculate the average update time
+    # Get the most recent update time
     update_times = [parse(record['updated_at']).astimezone(ist) for record in response]
     average_update_time = sum((ut - datetime(1970, 1, 1, tzinfo=ist)).total_seconds() for ut in update_times) / len(update_times)
     average_update_time = datetime.fromtimestamp(average_update_time, tz=ist)

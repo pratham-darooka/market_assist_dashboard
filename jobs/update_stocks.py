@@ -73,9 +73,9 @@ if __name__ == "__main__":
     fno_stocks = supabase.fetch_records('fno_stocks')
 
     while True:
-        if not need_run_update_script():
-            logger.info("No need to run updates, already updated!")
-            break
+        # if not need_run_update_script():
+        #     logger.info("No need to run updates, already updated!")
+        #     break
 
         if not is_market_open():
             asyncio.run(main(fno_stocks_list=fno_stocks))

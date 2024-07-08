@@ -26,7 +26,7 @@ def display_data(data):
         if isinstance(value, list):
             if value and isinstance(value[0], dict):
                 df = pd.DataFrame(value)
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, hide_index=True, use_container_width=True)
         elif isinstance(value, dict):
             df_list = []
             for subkey, subvalue in value.items():
@@ -35,7 +35,7 @@ def display_data(data):
                 df_list.append(sub_df)
             if df_list:
                 df = pd.concat(df_list, ignore_index=True)
-                st.dataframe(df)
+                st.dataframe(df, hide_index=True, use_container_width=True)
 
 def streamlit_callback(step_output):
     # This function will be called after each step of the agent's execution

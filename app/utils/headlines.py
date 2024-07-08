@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 from duckduckgo_search import DDGS
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 def get_mc_news():
     # Create dictionaries to store categorized headlines and URLs
@@ -154,6 +155,7 @@ def format_ddg_news_as_markdown(categorized_news, include_excerpt=False, limit=5
         markdown += "\n"
     return markdown
 
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(60))
 def fetch_recent_stock_news(name, symbol):
     time_limits = ["d", "w", "m"]
     time_labels = ["Last 24 hours' updates...", "Last week's updates...", "Last month's updates..."]

@@ -98,9 +98,9 @@ def main():
 
 if __name__ == "__main__":
     while True:
-        if not need_run_update_script('moneycontrol_data'):
-            logger.info("No need to run updates, already updated!")
-            break
+        # if not need_run_update_script('moneycontrol_data'):
+        #     logger.info("No need to run updates, already updated!")
+        #     break
 
         main()
 

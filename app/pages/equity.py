@@ -4,7 +4,7 @@ try:
     import streamlit as st
     import pandas as pd
     from datetime import datetime
-    from app.db.common import DB, write_aggrid_df, Stocks
+    from app.db.common import DB, Stocks
     from loguru import logger
     from st_aggrid import GridOptionsBuilder, AgGrid, GridUpdateMode, ColumnsAutoSizeMode
 except:
@@ -53,34 +53,17 @@ if __name__ == "__main__":
 
         cash_df_container = st.empty()
 
-        ######
-
         cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
+        cash_df.sort_values(by="Day Change (%)", ascending=False)
 
-        gb = GridOptionsBuilder.from_dataframe(cash_df)
-        gb.configure_selection(selection_mode="single", use_checkbox=False)
-        gridOptions = gb.build()
-
-        data = AgGrid(
+        equity_view_df = st.dataframe(
             cash_df,
-            enable_enterprise_modules=False,
-            allow_unsafe_jscode=True,
-            gridOptions=gridOptions,
-            update_mode=GridUpdateMode.VALUE_CHANGED,
-            fit_columns_on_grid_load=True,
-            columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-            autoSizeAllColumns=True,
-            # key=f'equity_{datetime.now()}',
-            key=f'equity',
-            width="100%",
-            reload_data=True,
-            theme='alpine',
+            on_select='rerun',
+            selection_mode="single-row",
             height=550,
+            hide_index=True,
         )
-
-        selection = data["selected_rows"]
-
-        ######
+        selected_rows = equity_view_df.selection.rows
 
         with title:
             st.header("All Stocks - Equity")
@@ -108,18 +91,11 @@ if __name__ == "__main__":
         with cash_df_container:
             cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
 
-            # selection = write_aggrid_df('stock_prices_equity_cash_view', 'equity')
+            if selected_rows:
+                selection = cash_df.iloc[selected_rows]['Stock'].tolist()[0]
 
-            if selection is not None:
-                st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(list(selection['Stock'])[0])
+                st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
                 st.switch_page('pages/stock_info.py')
-            
-            # cash_df = pd.DataFrame(supabase.fetch_records("stock_prices_equity_cash_view"))
-
-            # cash_df = cash_df.sort_values(by="Day Change (%)", ascending=False)
-            # cash_df.set_index("Stock", inplace=True)
-
-            # st.dataframe(cash_df, use_container_width=True, height=500)
 
         if not is_market_open():
             logger.info("Market not open, breaking flow")

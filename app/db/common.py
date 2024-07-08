@@ -260,45 +260,6 @@ class Stocks:
         
         return result
 
-def write_aggrid_df(table, key, height=550, condition=None, selection=True):
-    # Assuming DB() and supabase.fetch_records() are defined elsewhere
-    supabase = DB()
-    df = pd.DataFrame(supabase.fetch_records(table, condition=condition))
-
-    gb = GridOptionsBuilder.from_dataframe(df)
-
-    if selection:
-        # Configure selection options
-        gb.configure_selection(selection_mode="single", use_checkbox=False)
-    
-    # Configure sidebar and other grid options
-    gb.configure_side_bar()
-    gridOptions = gb.build()
-
-    data = AgGrid(
-        df,
-        enable_enterprise_modules=False,
-        allow_unsafe_jscode=True,
-        gridOptions=gridOptions,
-        update_mode=GridUpdateMode.SELECTION_CHANGED,
-        fit_columns_on_grid_load=True,
-        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-        autoSizeAllColumns=True,
-        key=f'{key}_{datetime.now()}',
-        # key=f'{key}',
-        reload_data=False,
-        width="100%",
-        # reload_data=True,
-        theme='alpine',
-        height=height,
-    )
-
-    if selection:
-        selected_rows = data["selected_rows"]
-        return selected_rows
-    else:
-        return data
-
 
 if __name__ == "__main__":
     # db = DB()

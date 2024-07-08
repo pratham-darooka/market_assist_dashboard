@@ -66,10 +66,6 @@ if __name__ == "__main__":
         st.switch_page('pages/stock_info.py')
     else:
         with stock_info.container():
-            # st.title(f"_Nothing found for..._ **{st.session_state.stock_info_code.upper()}**")
-            # back = st.button("Go Back!", type="primary", use_container_width=True)
-            # if back:
-            #     st.switch_page(f'pages/{st.session_state.referrer}.py')
             title = st.empty()
             
             with title:
