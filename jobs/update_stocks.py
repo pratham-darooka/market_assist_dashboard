@@ -49,7 +49,7 @@ async def fetch_and_update_price_bulk(stock_ids: list[int]):
 
 async def update_all_stocks_concurrently(stock_ids: list[int]):
     logger.info("Updating stocks")
-    batch_size = 10  # Number of stocks to process in a single batch
+    batch_size = 20  # Number of stocks to process in a single batch
     tasks = []
     for i in range(0, len(stock_ids), batch_size):
         batch = stock_ids[i:i + batch_size]
@@ -61,7 +61,7 @@ async def main(all_stocks_list=None, fno_stocks_list=None):
     if fno_stocks_list is None:
         await update_all_stocks_concurrently([stock['id'] for stock in all_stocks_list])
     elif all_stocks_list is None:
-        await update_all_stocks_concurrently([stock['stock_id'] for stock in fno_stocks_list])
+        await update_all_stocks_concurrently([stock['id'] for stock in fno_stocks_list])
     else:
         logger.error("No stocks input")
 
