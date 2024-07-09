@@ -45,7 +45,7 @@ def gather_data(mc_code, headers, price_headers):
                 logger.error(f"Error fetching {key} for {mc_code}: {e}")
                 data[key] = None
 
-    logger.info(f"Updated MC data for {mc_code}: {data}")
+    logger.info(f"Updated MC data for {mc_code}")
 
     return data
 

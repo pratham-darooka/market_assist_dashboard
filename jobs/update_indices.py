@@ -113,4 +113,4 @@ if __name__ == "__main__":
             logger.info("No need to run updates, market closed!")
             break
 
-        time.sleep(5)
+        time.sleep(1)

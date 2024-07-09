@@ -53,18 +53,6 @@ if __name__ == "__main__":
 
         cash_df_container = st.empty()
 
-        cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
-        cash_df.sort_values(by="Day Change (%)", ascending=False)
-
-        equity_view_df = st.dataframe(
-            cash_df,
-            on_select='rerun',
-            selection_mode="single-row",
-            height=550,
-            hide_index=True,
-        )
-        selected_rows = equity_view_df.selection.rows
-
         with title:
             st.header("All Stocks - Equity")
 
@@ -90,6 +78,16 @@ if __name__ == "__main__":
     while True:
         with cash_df_container:
             cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
+            cash_df.sort_values(by="Day Change (%)", ascending=False)
+
+            equity_view_df = st.dataframe(
+                cash_df,
+                on_select='rerun',
+                selection_mode="single-row",
+                height=550,
+                hide_index=True,
+            )
+            selected_rows = equity_view_df.selection.rows
 
             if selected_rows:
                 selection = cash_df.iloc[selected_rows]['Stock'].tolist()[0]
