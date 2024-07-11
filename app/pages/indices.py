@@ -134,6 +134,7 @@ if __name__ == "__main__":
                     selection = latest_cash_df.iloc[constituents_selected_rows]['Stock'].tolist()[0]
                     st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
                     st.switch_page('pages/stock_info.py')
+                    break
 
             else:                    
                 latest_cash_df = pd.DataFrame(
@@ -154,9 +155,13 @@ if __name__ == "__main__":
                 if constituents_selected_rows:
                     selection = latest_cash_df.iloc[constituents_selected_rows]['Stock'].tolist()[0]
                     st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
-                    st.switch_page('pages/stock_info.py')
+                    st.session_state.user_selection = True
+                    break
 
         if not is_market_open():
             break
 
         time.sleep(5)
+    
+    if st.session_state.user_selection:
+        st.switch_page('pages/stock_info.py')
