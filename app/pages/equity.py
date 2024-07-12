@@ -93,14 +93,11 @@ if __name__ == "__main__":
             if selected_rows:
                 selection = cash_df.iloc[selected_rows]['Stock'].tolist()[0]
                 st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
-                st.session_state.user_selection = True
+                st.switch_page('pages/stock_info.py')
                 break
 
         if not is_market_open():
             logger.info("Market not open, breaking flow")
             break
 
-        time.sleep(5)
-    
-    if st.session_state.user_selection:
-        st.switch_page('pages/stock_info.py')
+        time.sleep(5)    
