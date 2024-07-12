@@ -61,7 +61,7 @@ async def main(all_stocks_list=None, fno_stocks_list=None):
     if fno_stocks_list is None:
         await update_all_stocks_concurrently([stock['id'] for stock in all_stocks_list])
     elif all_stocks_list is None:
-        await update_all_stocks_concurrently([stock['id'] for stock in fno_stocks_list])
+        await update_all_stocks_concurrently([stock['stock_id'] for stock in fno_stocks_list])
     else:
         logger.error("No stocks input")
 
@@ -78,10 +78,10 @@ if __name__ == "__main__":
         #     break
 
         if not is_market_open():
-            asyncio.run(main(fno_stocks_list=fno_stocks))
+            asyncio.run(main(all_stocks_list=all_stocks))
             logger.info("No need to run further updates, market closed!")
             break
         else:
-            asyncio.run(main(fno_stocks_list=all_stocks))
+            asyncio.run(main(fno_stocks_list=fno_stocks))
 
         time.sleep(1)
