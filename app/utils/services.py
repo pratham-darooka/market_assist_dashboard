@@ -3,6 +3,18 @@ import subprocess
 import os
 import threading
 import sys
+import psutil
+
+def is_process_running(script_name):
+    """Check if there is any running process that contains the given script name."""
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            cmdline = proc.info['cmdline']
+            if cmdline and script_name in cmdline:
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False
 
 def run_subprocess(command):
     process = subprocess.Popen(args=command)
@@ -27,13 +39,16 @@ def trigger_update_jobs():
 
     threads = []
     for command in commands:
-        thread = threading.Thread(target=run_subprocess, args=(command,))
-        thread.start()
-        threads.append(thread)
+        script_name = command[-1]  # Extract the script name from the command list
+        if not is_process_running(script_name):
+            thread = threading.Thread(target=run_subprocess, args=(command,))
+            thread.start()
+            threads.append(thread)
+        else:
+            logger.info(f"Process {script_name} is already running. Skipping.")
 
     for thread in threads:
         thread.join()
-
 
 if __name__ == "__main__":
     trigger_update_jobs()
