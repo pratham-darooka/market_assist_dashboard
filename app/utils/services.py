@@ -45,7 +45,7 @@ def trigger_update_jobs():
             thread.start()
             threads.append(thread)
         else:
-            logger.info(f"Process {script_name} is already running. Skipping.")
+            logger.warning(f"Process {script_name} is already running. Skipping.")
 
     for thread in threads:
         thread.join()
