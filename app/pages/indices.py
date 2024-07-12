@@ -14,6 +14,7 @@ st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F
 if __name__ == "__main__":
     supabase = DB()
     stock = Stocks()
+    st.session_state.stock_info_co_name = None
 
     display_market_status()
 
@@ -117,7 +118,7 @@ if __name__ == "__main__":
             if st.session_state.index_selected == "All":
 
                 latest_cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_indices_view'))
-                latest_cash_df = latest_cash_df.sort_values(by="Day Change (%)", ascending=False)
+                latest_cash_df.sort_values(by="Industry", ascending=True, inplace=True)
 
                 constituents_view_df = st.dataframe(
                     latest_cash_df, 
@@ -155,13 +156,10 @@ if __name__ == "__main__":
                 if constituents_selected_rows:
                     selection = latest_cash_df.iloc[constituents_selected_rows]['Stock'].tolist()[0]
                     st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
-                    st.session_state.user_selection = True
+                    st.switch_page('pages/stock_info.py')
                     break
 
         if not is_market_open():
             break
 
         time.sleep(5)
-    
-    if st.session_state.user_selection:
-        st.switch_page('pages/stock_info.py')

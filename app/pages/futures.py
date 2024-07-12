@@ -15,6 +15,7 @@ if __name__ == "__main__":
     supabase = DB()
     dates = Dates()
     stock = Stocks()
+    st.session_state.stock_info_co_name = None
 
     display_market_status()
 
@@ -57,6 +58,11 @@ if __name__ == "__main__":
             with when:
                 expiry_dates = dates.dates()
                 expiry = st.selectbox("Choose expiry date.", expiry_dates, label_visibility="collapsed")
+                st.session_state.expiry_date_df_names_dict = {
+                        expiry_dates[0]: "stock_prices_latest_futures_view",
+                        expiry_dates[1]: "stock_prices_next_futures_view",
+                        expiry_dates[2]: "stock_prices_last_futures_view"
+                }
             with what:
                 st.header("F&O - Futures")
 
@@ -81,14 +87,8 @@ if __name__ == "__main__":
 
     while True:
         with futures_df_container:
-            df_names_for_dates = {
-                expiry_dates[0]: "stock_prices_latest_futures_view",
-                expiry_dates[1]: "stock_prices_next_futures_view",
-                expiry_dates[2]: "stock_prices_last_futures_view"
-            }
-
-            futures_df = pd.DataFrame(supabase.fetch_records(df_names_for_dates[expiry]))
-            futures_df.sort_values(by="Day Change (%)", ascending=False)
+            futures_df = pd.DataFrame(supabase.fetch_records(st.session_state.expiry_date_df_names_dict[expiry]))
+            futures_df.sort_values(by="Day Change (%)", ascending=False, inplace=True)
 
             futures_view_df = st.dataframe(
                 futures_df,
@@ -96,6 +96,7 @@ if __name__ == "__main__":
                 selection_mode="single-row",
                 height=550,
                 hide_index=True,
+                # key = f"futures_view_df_{int(time.time())}",
             )
 
             selected_rows = futures_view_df.selection.rows
@@ -103,14 +104,11 @@ if __name__ == "__main__":
             if selected_rows:
                 selection = futures_df.iloc[selected_rows]['Stock'].tolist()[0]
                 st.session_state.stock_info_co_name = stock.get_exact_name_from_stock_symbol(selection)
-                st.session_state.user_selection = True
+                st.switch_page('pages/stock_info.py')
                 break
 
         if not is_market_open():
             logger.info("Market not open, breaking flow")
             break
 
-        time.sleep(5)
-
-    if st.session_state.user_selection:
-        st.switch_page('pages/stock_info.py')
+        time.sleep(1)

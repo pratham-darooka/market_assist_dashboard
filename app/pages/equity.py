@@ -17,6 +17,7 @@ st.set_page_config(layout="wide", page_title="Market Assist", page_icon="\U0001F
 if __name__ == "__main__":
     supabase = DB()
     stock = Stocks()
+    st.session_state.stock_info_co_name = None
 
     display_market_status()
 
@@ -78,7 +79,7 @@ if __name__ == "__main__":
     while True:
         with cash_df_container:
             cash_df = pd.DataFrame(supabase.fetch_records('stock_prices_equity_cash_view'))
-            cash_df.sort_values(by="Day Change (%)", ascending=False)
+            cash_df.sort_values(by="Day Change (%)", ascending=False, inplace=True)
 
             equity_view_df = st.dataframe(
                 cash_df,
